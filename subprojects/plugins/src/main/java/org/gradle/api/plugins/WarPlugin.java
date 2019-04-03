@@ -37,7 +37,7 @@ import javax.inject.Inject;
 import java.util.concurrent.Callable;
 
 /**
- * <p>A {@link Plugin} which extends the {@link JavaPlugin} to add tasks which assemble a web application into a WAR
+ * <p>A {@link Plugin} which extends the {@link JavaLibraryPlugin} to add tasks which assemble a web application into a WAR
  * file.</p>
  */
 public class WarPlugin implements Plugin<Project> {
@@ -54,7 +54,7 @@ public class WarPlugin implements Plugin<Project> {
     }
 
     public void apply(final Project project) {
-        project.getPluginManager().apply(JavaPlugin.class);
+        project.getPluginManager().apply(JavaLibraryPlugin.class);
         final WarPluginConvention pluginConvention = new DefaultWarPluginConvention(project);
         project.getConvention().getPlugins().put("war", pluginConvention);
 
@@ -103,9 +103,13 @@ public class WarPlugin implements Plugin<Project> {
         Configuration provideRuntimeConfiguration = configurationContainer.create(PROVIDED_RUNTIME_CONFIGURATION_NAME).setVisible(false).
                 extendsFrom(provideCompileConfiguration).
                 setDescription("Additional runtime classpath for libraries that should not be part of the WAR archive.");
+//        configurationContainer.getByName(JavaPlugin.API_CONFIGURATION_NAME).extendsFrom(provideCompileConfiguration);
+//        configurationContainer.getByName(JavaPlugin.RUNTIME_ELEMENTS_CONFIGURATION_NAME).extendsFrom(provideRuntimeConfiguration);
         configurationContainer.getByName(JavaPlugin.COMPILE_CONFIGURATION_NAME).extendsFrom(provideCompileConfiguration);
-        configurationContainer.getByName(JavaPlugin.RUNTIME_CONFIGURATION_NAME).extendsFrom(provideRuntimeConfiguration);
-    }
+
+        provideRuntimeConfiguration.getAttributes().attribute(org.gradle.api.attributes.Usage.USAGE_ATTRIBUTE, objectFactory.named(Usage.class, Usage.JAVA_RUNTIME_JARS));
+
+        configurationContainer.getByName(JavaPlugin.RUNTIME_CONFIGURATION_NAME).extendsFrom(provideRuntimeConfiguration);    }
 
     private void configureComponent(Project project, PublishArtifact warArtifact) {
         project.getComponents().add(objectFactory.newInstance(WebApplication.class, warArtifact, objectFactory.named(Usage.class, "master")));

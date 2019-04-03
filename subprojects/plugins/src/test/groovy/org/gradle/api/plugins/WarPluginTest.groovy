@@ -30,6 +30,7 @@ class WarPluginTest extends AbstractProjectBuilderSpec {
         project.pluginManager.apply(WarPlugin)
 
         then:
+        project.getPlugins().hasPlugin(JavaLibraryPlugin)
         project.getPlugins().hasPlugin(JavaPlugin)
         project.convention.plugins.war instanceof WarPluginConvention
     }
